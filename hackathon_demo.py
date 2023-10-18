@@ -40,6 +40,15 @@ def predict(day, month, hour, hospital):
     # Return the prediction
     return result[['triage_category', 'count']]
 
+def should_go_to_hospital(day, month, hour, hospital, currentPeople):
+    predictions = predict(day, month, hour, hospital)
+    totalPeople = predictions['count'].sum()
+    if totalPeople*0.6 < currentPeople:
+        return False
+    else:
+        return True
+
+
 def retrain(day, month, hour, hospital, triage_categoryWithCount: dict):
     model = load_model('models/best_model.h5')
 
@@ -88,61 +97,20 @@ if __name__ == '__main__':
     print("Receiving data from the hospitals...")
     receive_data()
     print("Data received!")
+    days = ['Monday', 'Sunday', 'Friday', 'Monday', 'Monday', 'Monday']
+    months = ['January', 'May', 'September', 'August', 'September', 'April']
+    hours = [8, 15, 13, 8, 8, 13]
+    hospitals = [7001, 7002, 7003, 7017, 7011, 7012]
+    peopleTotal = [10, 20, 2, 15, 4, 16]
     print("Predicting the number of patients per triage level for the next hour...")
-    sleep(2)
-    print("hospital 7001")
-    day = 'Monday'
-    month = 'January'
-    hour = 8
-    hospital = 7001
-    result = predict(day, month, hour, hospital)
-    print(result)
-    sleep(2)
-    print("hospital 7002")
-    sleep(2)
-    day = 'Sunday'
-    month = 'May'
-    hour = 15
-    hospital = 7002
-    result = predict(day, month, hour, hospital)
-    print(result)
-    sleep(2)
-    print("hospital 7003")
-    sleep(2)
-    day = 'Friday'
-    month = 'September'
-    hour = 13
-    hospital = 7003
-    result = predict(day, month, hour, hospital)
-    print(result)
-    sleep(2)
-    print("hospital 7017")
-    sleep(2)
-    day = 'Monday'
-    month = 'August'
-    hour = 8
-    hospital = 7017
-    result = predict(day, month, hour, hospital)
-    print(result)
-    sleep(2)
-    print("hospital 7011")
-    sleep(2)
-    day = 'Monday'
-    month = 'September'
-    hour = 8
-    hospital = 7011
-    result = predict(day, month, hour, hospital)
-    print(result)
-    sleep(2)
-    print("hospital 7012")
-    sleep(2)
-    day = 'Monday'
-    month = 'April'
-    hour = 13
-    hospital = 7012
-    result = predict(day, month, hour, hospital)
-    print(result)
-    sleep(2)
+    for day, month, hour, hospital, peopleInED in zip(days, months, hours, hospitals, peopleTotal):
+        sleep(2)
+        print(f"hospital {hospital}")
+        result = predict(day, month, hour, hospital)
+        print(result)
+        sleep(1)
+        print(f"Go to hospital {hospital}" if should_go_to_hospital(day, month, hour, hospital, peopleInED) else f"Don't go to hospital {hospital} there are {peopleInED} people in the ED")
+        sleep(2)
     print("Retraining the model...")
     sleep(2)
     day = 'Monday'
